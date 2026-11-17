@@ -1,0 +1,830 @@
+
+(async function () {
+
+  // ============================================================
+  // MATERIAL PARAMETER UNIT UPDATE AUTOMATION
+  // ============================================================
+
+  // All materials use the same grade/unit configuration.
+  const commonGrades = [
+    { grade: "DIA", unit: "mm" },
+    { grade: "FGL", unit: "mm" },
+    { grade: "IGL", unit: "mm" },
+    { grade: "AREA", unit: "mm²" },
+    { grade: "EL%", unit: "%" },
+    { grade: "YS", unit: "MPa" },
+    { grade: "UTS", unit: "MPa" }
+  ];
+
+  // Material list
+  const materials = [
+    "AG_ASTMA572GR60_LNT_250X250X22_6-10",
+    "AG_E350A_250X250X20_10-13",
+    "AG_E350A_250X250X20_6-10",
+    "AG_E350A_250X250X22_10-13",
+    // "AG_E350A_250X250X24_10-13", // REMOVED AS REQUESTED
+    "AG_E350A_250X250X24_6-10",
+    "AG_E350A_250X250X25_10-13",
+    "AG_E350A_250X250X25_6-10",
+    "AG_S355JO_250X250X25_6-10",
+    "AG_S355JR_250X250X22_10-13",
+    "AG_S355JR_250X250X23_6-10",
+    "AG_S355JR_250X250X25_10-13",
+    "AG_S355JR_250X250X25_6-10",
+    "AG_S460JR_250X250X20_10-13",
+    "AG_S460JR_250X250X20_6-10",
+    "AG_S460JR_250X250X23_6-10",
+    "AG_S460JR_250X250X25_10-13",
+    "CR_55C11_CR100_10-13",
+    "CR_55C11_CR100_6-10",
+    "CR_GR880_CR100_10-13",
+    "CR_JSP/STR710_CR120_10-13",
+    "CR_JSP/STR710_CR120_6-10",
+    "HEB_S355J2_800X262_10-13",
+    "HEB_S355J2_800X262_M13",
+    "NPB_E250A_600X122.4_10-13",
+    "NPB_E250JR_450X67.2_10-13",
+    "NPB_E250JR_450X77.6_10-13",
+    "NPB_E250JR_450X77.6_6-10",
+    "NPB_E250JR_450X92.4_10-13",
+    "NPB_E250JR_600X107.6_6-10",
+    "NPB_E250JR_600X122.4_10-13",
+    "NPB_E250JR_600X154.5_10-13",
+    "NPB_E250JR_600X154.5_6-10",
+    "NPB_E350_450X67.2_10-13",
+    "NPB_E350_450X67.2_6-10",
+    "NPB_E350_450X77.6_10-13",
+    "NPB_E350_450X77.6_6-10",
+    "NPB_E350_450X92.4_10-13",
+    "NPB_E350_450X92.4_6-10",
+    "NPB_E350_600X107.6_10-13",
+    "NPB_E350_600X122.4_10-13",
+    "NPB_E350_600X154.5_10-13",
+    "NPB_E350_600X154.5_6-10",
+    "NPB_E410_450X77.6_6-10",
+    "UB_ASTM A36_610X125_10-13",
+    "UB_ASTM A36_610X140_10-13",
+    "UB_E250JR_533X101_10-13",
+    "UB_E250JR_533X122_6-10",
+    "UB_E250JR_533X82_10-13",
+    "UB_E250JR_533X92_10-13",
+    "UB_E250JR_610X101_10-13",
+    "UB_E250JR_610X125_10-13",
+    "UB_E250JR_610X140_10-13",
+    "UB_E250JR_610X149_10-13",
+    "UB_E275BR_533X82_10-13",
+    "UB_E275BR_533X82_6-10",
+    "UB_E275BR_610X125_10-13",
+    "UB_E275BR_610X125_6-10",
+    "UB_E350_533X101_10-13",
+    "UB_E350_533X101_6-10",
+    "UB_E350_610X101_10-13",
+    "UB_E350_610X101_6-10",
+    "UB_E350_610X113_10-13",
+    "UB_E350_610X113_6-10",
+    "UB_E350_610X125_10-13",
+    "UB_E350_610X140_10-13",
+    "UB_E350BR_610X149_10-13",
+    "UB_E350BR_610X149_6-10",
+    "UB_E350BR_610X238_10-13",
+    "UB_E350BR_610X238_6-10",
+    "UB_E410_533X82_10-13",
+    "UB_E450BR_610X140_6-10",
+    "UB_S275JR_533X82_10-13",
+    "UB_S275JR_610X125_10-13",
+    "UB_S355J2_610X125_10-13",
+    "UC_ASTM A36_305X97_10-13",
+    "UC_E250A_305X97_10-13",
+    "UC_E250JR_254X107_10-13",
+    "UC_E250JR_254X167_10-13",
+    "UC_E250JR_254X73_10-13",
+    "UC_E250JR_254X73_6-10",
+    "UC_E250JR_254X89_10-13",
+    "UC_E250JR_305X118_10-13",
+    "UC_E250JR_305X118_6-10",
+    "UC_E250JR_305X137_10-13",
+    "UC_E250JR_305X158_10-13",
+    "UC_E250JR_305X198_10-13",
+    "UC_E250JR_305X240_10-13",
+    "UC_E250JR_305X97_10-13",
+    "UC_E250JR_305X97_6-10",
+    "UC_E250JR_356X129_10-13",
+    "UC_E250JR_356X129_6-10",
+    "UC_E250JR_356X177_10-13",
+    "UC_E250JR_356X202_10-13",
+    "UC_E250JR_356X202_M13",
+    "UC_E250JR_356X235_10-13",
+    "UC_E250JR_356X235_6-10",
+    "UC_E250JR_356X287_10-13",
+    "UC_E275BR_254X73_10-13",
+    "UC_E275BR_254X73_6-10",
+    "UC_E275BR_254X89_6-10",
+    "UC_E275BR_305X118_10-13",
+    "UC_E275BR_305X97_10-13",
+    "UC_E275BR_305X97_6-10",
+    "UC_E275BR_356X235_6-10",
+    "UC_E350_254X167_10-13",
+    "UC_E350_254X73_10-13",
+    "UC_E350_254X73_6-10",
+    "UC_E350_254X89_10-13",
+    "UC_E350_254X89_6-10",
+    "UC_E350_305X118_10-13",
+    "UC_E350_305X137_10-13",
+    "UC_E350_305X158_10-13",
+    "UC_E350_305X158_6-10",
+    "UC_E350_305X198_10-13",
+    "UC_E350_305X198_6-10",
+    "UC_E350_305X97_10-13",
+    "UC_E350_305X97_6-10",
+    "UC_E350_356X129_6-10",
+    "UC_E350_356X287_6-10",
+    "UC_E410_305X137_10-13",
+    "UC_E410_305X198_10-13",
+    "UC_E410_305X97_10-13",
+    "UC_E410_305X97_6-10",
+    "UC_E410_356X129_10-13",
+    "UC_E410_356X129_6-10",
+    "UC_E450BR_254X73_10-13",
+    "UC_E450BR_254X73_6-10",
+    "UC_E450BR_305X118_10-13",
+    "UC_E450BR_305X118_6-10",
+    "UC_E450BR_305X158_6-10",
+    "UC_E450BR_305X198_10-13",
+    "UC_E450BR_356X177_10-13",
+    "UC_E450BR_356X177_6-10",
+    "UC_E450BR_356X235_10-13",
+    "UC_E450BR_356X287_6-10",
+    "UC_S275JO_356X235_10-13",
+    "UC_S275JR_254X73_10-13",
+    "UC_S275JR_254X73_6-10",
+    "UC_S275JR_254X89_10-13",
+    "UC_S275JR_254X89_6-10",
+    "UC_S275JR_305X118_10-13",
+    "UC_S275JR_305X118_6-10",
+    "UC_S275JR_305X97_10-13",
+    "UC_S275JR_305X97_6-10",
+    "UC_S275JR_356X129_10-13",
+    "UC_S275JR_356X177_10-13",
+    "UC_S355JO_356X287_10-13",
+    "UC_S355JR_356X287_10-13",
+    "WPB_E250JR_600X128.8_10-13",
+    "WPB_E250JR_600X177.8_10-13",
+    "WPB_E250JR_600X177.8_6-10",
+    "WPB_E250JR_600X211.9_10-13",
+    "WPB_E250JR_600X211.9_6-10",
+    "WPB_E250JR_600X285.5_10-13",
+    "WPB_E250JR_700X149.9_10-13",
+    "WPB_E250JR_700X204.5_10-13",
+    "WPB_E250JR_700X240.5_10-13",
+    "WPB_E250JR_800X171_10-13",
+    "WPB_E250JR_800X262_6-10",
+    "WPB_E250JR_800X317_10-13",
+    "WPB_E250JR_900X291_10-13",
+    "WPB_E275BR_600X128.8_10-13",
+    "WPB_E275BR_600X128.8_6-10",
+    "WPB_E275BR_600X177.8_10-13",
+    "WPB_E275BR_600X177.8_6-10",
+    "WPB_E275BR_700X240.5_6-10",
+    "WPB_E275BR_800X262_10-13",
+    "WPB_E275BR_800X317_10-13",
+    "WPB_E275BR_900X333_10-13",
+    "WPB_E350_600X128.8_10-13",
+    "WPB_E350_600X128.8_6-10",
+    "WPB_E350_600X177.8_10-13",
+    "WPB_E350_600X177.8_6-10",
+    "WPB_E350_600X211.9_10-13",
+    "WPB_E350_700X149.9_10-13",
+    "WPB_E350_700X204.5_6-10",
+    "WPB_E350_700X240.5_10-13",
+    "WPB_E350_700X240.5_6-10",
+    "WPB_E350_700X240.5_M13",
+    "WPB_E350_700X300.7_10-13",
+    "WPB_E350_700X300.7_6-10",
+    "WPB_E350_800X224_10-13",
+    "WPB_E350_800X262_10-13",
+    "WPB_E350_800X262_6-10",
+    "WPB_E350_900X252_10-13",
+    "WPB_E350_900X252_6-10",
+    "WPB_E350_900X291_10-13",
+    "WPB_E350_900X333_10-13",
+    "WPB_E350BR_600X153_10-13",
+    "WPB_S275JR_700X149.9_10-13",
+    "WPB_S275JR_700X300.7_6-10",
+    "WPB_S355J2_900X252_10-13",
+    "WPB_S355JR_700X204.5_10-13"
+  ];
+
+  const gradeUpdates = materials.map(material => ({
+    material,
+    grades: commonGrades.map(grade => ({ ...grade }))
+  }));
+
+  // ============================================================
+  // CONFIGURATION
+  // ============================================================
+
+  const SEARCH_SELECTOR =
+    'input[placeholder="Code, name, or category..."]';
+
+  const UNIT_SELECTOR =
+    'input[placeholder="e.g., %"]';
+
+  const EYE_PATH = "M2.036 12.322";
+
+  const WAIT = 700;
+  const LONG_WAIT = 1200;
+
+  // ============================================================
+  // ALERT / PROMPT HANDLING
+  // ============================================================
+
+  const originalAlert = window.alert;
+  const originalPrompt = window.prompt;
+
+  window.alert = message => {
+    console.log("Alert handled:", message);
+  };
+
+  // Native prompt: empty reason, equivalent to clicking OK.
+  window.prompt = (message, defaultValue = "") => {
+    console.log("Change reason prompt handled:", message);
+    return "";
+  };
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+
+  const sleep = ms =>
+    new Promise(resolve => setTimeout(resolve, ms));
+
+  const normalize = value =>
+    (value || "").trim().toLowerCase();
+
+  function isVisible(element) {
+    if (!element) return false;
+
+    const rect = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+
+    return (
+      rect.width > 0 &&
+      rect.height > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden"
+    );
+  }
+
+  function clickElement(element) {
+    if (!element) {
+      throw new Error("Element not found");
+    }
+
+    element.scrollIntoView({
+      behavior: "instant",
+      block: "center"
+    });
+
+    element.click();
+  }
+
+  function getVisibleElements(selector, root = document) {
+    return [...root.querySelectorAll(selector)]
+      .filter(isVisible);
+  }
+
+  function setInputValue(input, value) {
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value"
+    ).set;
+
+    setter.call(input, value);
+
+    input.dispatchEvent(
+      new Event("input", { bubbles: true })
+    );
+
+    input.dispatchEvent(
+      new Event("change", { bubbles: true })
+    );
+  }
+
+  // ============================================================
+  // FIND MATERIAL ELEMENT
+  // ============================================================
+
+  function findMaterialElement(materialName) {
+    const matches = [
+      ...document.querySelectorAll("*")
+    ].filter(element =>
+      element.children.length === 0 &&
+      normalize(element.textContent) === normalize(materialName) &&
+      isVisible(element)
+    );
+
+    if (!matches.length) {
+      throw new Error(`Material not found: ${materialName}`);
+    }
+
+    return matches[0];
+  }
+
+  // ============================================================
+  // FIND EYE BUTTON
+  // Search material hierarchy and inspect SVG path.
+  // ============================================================
+
+  function getEyeButtonFromContainer(container) {
+    if (!container) return null;
+
+    return [
+      ...container.querySelectorAll('button, [role="button"]')
+    ].find(button => {
+
+      if (!isVisible(button)) return false;
+
+      return [
+        ...button.querySelectorAll("svg path")
+      ].some(path => {
+        const d = (path.getAttribute("d") || "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        return d.startsWith(EYE_PATH);
+      });
+
+    }) || null;
+  }
+
+  async function searchMaterial(materialName) {
+    const searchInput =
+      document.querySelector(SEARCH_SELECTOR);
+
+    if (!searchInput) {
+      throw new Error("Material search input not found");
+    }
+
+    searchInput.focus();
+    setInputValue(searchInput, materialName);
+
+    await sleep(LONG_WAIT);
+
+    const materialElement =
+      findMaterialElement(materialName);
+
+    // Find Expand button in the material hierarchy
+    let parent = materialElement;
+    let expandButton = null;
+
+    for (let i = 0; i < 12 && parent; i++) {
+      expandButton = [
+        ...parent.querySelectorAll(
+          'button[aria-label="Expand"], button[title="Expand"]'
+        )
+      ].find(isVisible);
+
+      if (expandButton) break;
+
+      parent = parent.parentElement;
+    }
+
+    if (expandButton) {
+      clickElement(expandButton);
+      await sleep(LONG_WAIT);
+      console.log("Expanded:", materialName);
+    }
+
+    return findMaterialElement(materialName);
+  }
+
+  async function openGradeList(materialName) {
+    console.log("Finding eye button:", materialName);
+
+    const materialElement =
+      findMaterialElement(materialName);
+
+    let parent = materialElement;
+    let eyeButton = null;
+
+    for (let i = 0; i < 12 && parent; i++) {
+      eyeButton = getEyeButtonFromContainer(parent);
+
+      if (eyeButton) break;
+
+      parent = parent.parentElement;
+    }
+
+    if (!eyeButton) {
+      console.error("Eye button not found. Visible buttons:");
+
+      console.table(
+        getVisibleElements("button").map((button, index) => ({
+          index,
+          text: button.innerText,
+          title: button.title,
+          ariaLabel: button.getAttribute("aria-label"),
+          svgPaths: [
+            ...button.querySelectorAll("svg path")
+          ].map(path => path.getAttribute("d")).join(" | "),
+          html: button.outerHTML.slice(0, 300)
+        }))
+      );
+
+      throw new Error(
+        `Eye button not found for ${materialName}`
+      );
+    }
+
+    clickElement(eyeButton);
+    await sleep(LONG_WAIT);
+
+    console.log("Eye button clicked:", materialName);
+
+    findParametersBox(materialName);
+  }
+
+  // ============================================================
+  // FIND PARAMETERS BOX
+  // ============================================================
+
+  function findParametersBox(materialName) {
+    const expectedHeading = normalize(
+      `Parameters for ${materialName}`
+    );
+
+    const headings = [
+      ...document.querySelectorAll("h3")
+    ].filter(element =>
+      normalize(element.textContent) === expectedHeading &&
+      isVisible(element)
+    );
+
+    if (!headings.length) {
+      throw new Error(
+        `Parameters heading not found: ${materialName}`
+      );
+    }
+
+    let parent = headings[headings.length - 1];
+
+    for (let i = 0; i < 8 && parent; i++) {
+      parent = parent.parentElement;
+      if (!parent) break;
+
+      const table = parent.querySelector("table");
+
+      if (table && table.querySelector("tbody tr")) {
+        return { container: parent, table };
+      }
+    }
+
+    throw new Error(
+      `Parameter table not found: ${materialName}`
+    );
+  }
+
+  // ============================================================
+  // READ PARAMETERS
+  // ============================================================
+
+  function getAvailableParameters(materialName) {
+    const { table } = findParametersBox(materialName);
+
+    const rows = [
+      ...table.querySelectorAll("tbody > tr")
+    ];
+
+    const parameters = [];
+
+    for (const row of rows) {
+      const cells = row.querySelectorAll("td");
+
+      if (cells.length < 5) continue;
+
+      const code = cells[1].textContent.trim();
+
+      if (!code) continue;
+
+      parameters.push({
+        code,
+        name: cells[2].textContent.trim(),
+        type: cells[3].textContent.trim(),
+        editButton: row.querySelector('button[title="Edit"]'),
+        row
+      });
+    }
+
+    console.table(
+      parameters.map(parameter => ({
+        code: parameter.code,
+        name: parameter.name,
+        type: parameter.type,
+        editable: !!parameter.editButton
+      }))
+    );
+
+    return parameters;
+  }
+
+  function findParameterRow(materialName, gradeName) {
+    const parameters =
+      getAvailableParameters(materialName);
+
+    const parameter = parameters.find(item =>
+      normalize(item.code) === normalize(gradeName)
+    );
+
+    if (!parameter) return null;
+
+    if (
+      !parameter.editButton ||
+      !isVisible(parameter.editButton)
+    ) {
+      throw new Error(
+        `Edit button unavailable for ${gradeName}`
+      );
+    }
+
+    return parameter;
+  }
+
+  // ============================================================
+  // VALIDATE ALL GRADES BEFORE UPDATING
+  // ============================================================
+
+  function validateMaterialGrades(item) {
+    const parameters =
+      getAvailableParameters(item.material);
+
+    const availableCodes = new Set(
+      parameters.map(parameter =>
+        normalize(parameter.code)
+      )
+    );
+
+    const missingGrades = [];
+    const foundGrades = [];
+
+    for (const gradeItem of item.grades) {
+      if (availableCodes.has(normalize(gradeItem.grade))) {
+        foundGrades.push(gradeItem.grade);
+      } else {
+        missingGrades.push(gradeItem.grade);
+      }
+    }
+
+    console.log("Found:", foundGrades);
+    console.log("Missing:", missingGrades);
+
+    return {
+      valid: missingGrades.length === 0,
+      foundGrades,
+      missingGrades
+    };
+  }
+
+  // ============================================================
+  // UPDATE UNIT
+  // ============================================================
+
+  async function updateGradeUnit(
+    materialName,
+    gradeName,
+    unit
+  ) {
+    const parameter =
+      findParameterRow(materialName, gradeName);
+
+    if (!parameter) {
+      throw new Error(`Parameter not found: ${gradeName}`);
+    }
+
+    console.log(`Editing ${gradeName} → ${unit}`);
+
+    clickElement(parameter.editButton);
+    await sleep(WAIT);
+
+    const unitInputs =
+      getVisibleElements(UNIT_SELECTOR);
+
+    const unitInput =
+      unitInputs[unitInputs.length - 1];
+
+    if (!unitInput) {
+      throw new Error(
+        `Unit input not found for ${gradeName}`
+      );
+    }
+
+    setInputValue(unitInput, unit);
+    await sleep(300);
+
+    const updateButton = getVisibleElements("button")
+      .find(button =>
+        normalize(button.innerText)
+          .includes("update parameter")
+      );
+
+    if (!updateButton) {
+      throw new Error("Update Parameter button not found");
+    }
+
+    clickElement(updateButton);
+
+    // Native window.prompt() is handled by the override.
+    await sleep(LONG_WAIT);
+
+    console.log(`UPDATED: ${gradeName} → ${unit}`);
+
+    return "SUCCESS";
+  }
+
+  // ============================================================
+  // CLICK DONE BUTTON
+  // ============================================================
+
+  async function clickDoneButton(materialName) {
+    const { container } =
+      findParametersBox(materialName);
+
+    const doneButton = [
+      ...container.querySelectorAll("button")
+    ].find(button =>
+      isVisible(button) &&
+      button.innerText.trim().toLowerCase() === "done"
+    );
+
+    if (!doneButton) {
+      throw new Error(
+        `Done button not found for ${materialName}`
+      );
+    }
+
+    clickElement(doneButton);
+
+    await sleep(LONG_WAIT);
+
+    console.log("Done clicked:", materialName);
+  }
+
+  // ============================================================
+  // PROCESS MATERIAL
+  // ============================================================
+
+  async function processMaterial(item, results) {
+    console.log("\n==================================");
+    console.log("PROCESSING:", item.material);
+    console.log("==================================");
+
+    let parametersBoxOpened = false;
+
+    try {
+      await searchMaterial(item.material);
+
+      await openGradeList(item.material);
+
+      parametersBoxOpened = true;
+
+      const validation =
+        validateMaterialGrades(item);
+
+      if (!validation.valid) {
+        console.warn(
+          "SKIPPED - Missing parameters:",
+          validation.missingGrades
+        );
+
+        results.skippedMaterials.push({
+          material: item.material,
+          reason: "Missing requested parameters",
+          missingGrades: validation.missingGrades
+        });
+
+        return;
+      }
+
+      results.validatedMaterials.push(item.material);
+
+      for (const gradeItem of item.grades) {
+        try {
+          await updateGradeUnit(
+            item.material,
+            gradeItem.grade,
+            gradeItem.unit
+          );
+
+          results.success.push({
+            material: item.material,
+            grade: gradeItem.grade,
+            unit: gradeItem.unit
+          });
+
+        } catch (error) {
+          console.error(
+            `FAILED: ${gradeItem.grade}`,
+            error.message
+          );
+
+          results.failed.push({
+            material: item.material,
+            grade: gradeItem.grade,
+            unit: gradeItem.unit,
+            error: error.message
+          });
+        }
+
+        await sleep(WAIT);
+      }
+
+    } catch (error) {
+      console.error(
+        `MATERIAL ERROR: ${item.material}`,
+        error.stack || error
+      );
+
+      results.skippedMaterials.push({
+        material: item.material,
+        reason: error.message,
+        missingGrades: []
+      });
+
+    } finally {
+
+      // Close Parameters box after updates or validation skip
+      if (parametersBoxOpened) {
+        try {
+          await clickDoneButton(item.material);
+        } catch (error) {
+          console.error(
+            "Could not click Done:",
+            error.message
+          );
+
+          results.doneButtonFailures.push({
+            material: item.material,
+            error: error.message
+          });
+        }
+      }
+    }
+  }
+
+  // ============================================================
+  // MAIN EXECUTION
+  // ============================================================
+
+  const results = {
+    success: [],
+    failed: [],
+    skippedMaterials: [],
+    validatedMaterials: [],
+    doneButtonFailures: []
+  };
+
+  try {
+    console.log("STARTING MATERIAL UNIT UPDATES");
+    console.log("Total materials:", gradeUpdates.length);
+    console.log("Common grades per material:", commonGrades.length);
+
+    for (const item of gradeUpdates) {
+      await processMaterial(item, results);
+    }
+
+  } catch (error) {
+    console.error("MAIN EXECUTION ERROR:", error);
+
+  } finally {
+
+    console.log("\n========== FINAL SUMMARY ==========");
+
+    console.log("Total materials:", gradeUpdates.length);
+    console.log("Validated materials:", results.validatedMaterials.length);
+    console.log("Skipped materials:", results.skippedMaterials.length);
+    console.log("Successful updates:", results.success.length);
+    console.log("Failed updates:", results.failed.length);
+    console.log("Done button failures:", results.doneButtonFailures.length);
+
+    console.log("\nSUCCESSFUL UPDATES:");
+    console.table(results.success);
+
+    console.log("\nFAILED UPDATES:");
+    console.table(results.failed);
+
+    console.log("\nSKIPPED MATERIALS:");
+    console.table(results.skippedMaterials);
+
+    console.log("\nDONE BUTTON FAILURES:");
+    console.table(results.doneButtonFailures);
+
+    window.alert = originalAlert;
+    window.prompt = originalPrompt;
+
+    console.log("SCRIPT COMPLETED.");
+  }
+
+  return results;
+
+})().catch(error => {
+  console.error("FATAL ERROR:", error.stack || error);
+});
