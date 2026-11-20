@@ -1,0 +1,500 @@
+/**
+ * Form Question Editor – browser console script
+ * ------------------------------------------------
+ * HOW TO RUN
+ *   1. Open the Forms LIST page (the one with the Search box + table).
+ *   2. Open DevTools (F12) → Console.
+ *   3. Edit the FORMS array below, paste the whole script, press Enter.
+ *   4. To stop midway: type  window.__formBotStop = true  in the console.
+ *
+ * For each form it will:
+ *   search name → click Edit → delete all existing questions →
+ *   add each Material as a question (text, "Map to parameter" + parameter name, "Required") →
+ *   Save Form → return to the list for the next form.
+ */
+(async () => {
+  // ===================== INPUT DATA =====================
+  const FORMS = [
+    { Name: "SPONGE_IRON-0020-Kiln# 1", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 1", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 1", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 1", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 1", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 1", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 1", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 1", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 1", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 1", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 2", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 2", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 2", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 2", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 2", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 2", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 2", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 2", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 2", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 2", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 3", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 3", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 3", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 3", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 3", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 3", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 3", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 3", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 3", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 3", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 4", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 4", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 4", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 4", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 4", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 4", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 4", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 4", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 4", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 4", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 5", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 5", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 5", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 5", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 5", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 5", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 5", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 5", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 5", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 5", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 6", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 6", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 6", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 6", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 6", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 6", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 6", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 6", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 6", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 6", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 7", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 7", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 7", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 7", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 7", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 7", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 7", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 7", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 7", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 7", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 8", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 8", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 8", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 8", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 8", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 8", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 8", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 8", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 8", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 8", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 9", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 9", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 9", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 9", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 9", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 9", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 9", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 9", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 9", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 9", Materials: ["FE(M)", "NON-MAG"] },
+    { Name: "SPONGE_IRON-0020-Kiln# 10", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0030-Kiln# 10", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0040-Kiln# 10", Materials: ["MOI", "FE(T)", "+20 MM", "-20+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0050-Kiln# 10", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0060-Kiln# 10", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0070-Kiln# 10", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0080-Kiln# 10", Materials: ["MOI", "VM", "ASH", "FC", "+25mm", "-25+5 MM", "-5+1 MM", "-1 MM"] },
+    { Name: "SPONGE_IRON-0090-Kiln# 10", Materials: ["C", "S", "P"] },
+    { Name: "SPONGE_IRON-0100-Kiln# 10", Materials: ["VM", "ASH", "FC"] },
+    { Name: "SPONGE_IRON-0110-Kiln# 10", Materials: ["FE(M)", "NON-MAG"] },
+  ];
+
+  // ===================== SETTINGS =======================
+  const CFG = {
+    stepDelay: 400,      // ms between UI actions
+    searchDelay: 1500,   // ms to wait after typing in search (debounce)
+    timeout: 15000,      // ms max wait for any element
+    afterSaveDelay: 2500,// ms to wait after clicking Save Form
+    mapToParameter: true,
+    required: true,
+    dryRun: false,       // true = do everything except click "Save Form"
+    skipDuplicates: true,// if 2+ forms have the exact same name, skip (server rejects save with 409)
+    searchRetries: 2,    // how many times to retry the search if the form isn't found
+    addRetries: 3,       // how many times to retry "Add question" if the new box doesn't appear
+    // re-run only these form names; set to [] to run all
+    onlyNames: [
+      "SPONGE_IRON-0100-Kiln# 1",
+      "SPONGE_IRON-0110-Kiln# 1",
+      "SPONGE_IRON-0080-Kiln# 5",
+      "SPONGE_IRON-0040-Kiln# 6",
+      "SPONGE_IRON-0050-Kiln# 6",
+      "SPONGE_IRON-0060-Kiln# 6",
+      "SPONGE_IRON-0070-Kiln# 6",
+      "SPONGE_IRON-0080-Kiln# 6",
+      "SPONGE_IRON-0090-Kiln# 6",
+      "SPONGE_IRON-0100-Kiln# 6",
+      "SPONGE_IRON-0110-Kiln# 6",
+      "SPONGE_IRON-0020-Kiln# 7",
+      "SPONGE_IRON-0030-Kiln# 7",
+      "SPONGE_IRON-0040-Kiln# 7",
+      "SPONGE_IRON-0050-Kiln# 7",
+      "SPONGE_IRON-0060-Kiln# 7",
+      "SPONGE_IRON-0070-Kiln# 7",
+      "SPONGE_IRON-0080-Kiln# 7",
+      "SPONGE_IRON-0090-Kiln# 7",
+      "SPONGE_IRON-0100-Kiln# 7",
+      "SPONGE_IRON-0110-Kiln# 7",
+      "SPONGE_IRON-0020-Kiln# 8",
+      "SPONGE_IRON-0030-Kiln# 8",
+      "SPONGE_IRON-0040-Kiln# 8",
+      "SPONGE_IRON-0050-Kiln# 8",
+      "SPONGE_IRON-0060-Kiln# 8",
+      "SPONGE_IRON-0070-Kiln# 8",
+      "SPONGE_IRON-0080-Kiln# 8",
+      "SPONGE_IRON-0090-Kiln# 8",
+      "SPONGE_IRON-0100-Kiln# 8",
+      "SPONGE_IRON-0110-Kiln# 8",
+      "SPONGE_IRON-0020-Kiln# 9",
+      "SPONGE_IRON-0030-Kiln# 9",
+      "SPONGE_IRON-0040-Kiln# 9",
+      "SPONGE_IRON-0050-Kiln# 9",
+      "SPONGE_IRON-0060-Kiln# 9",
+      "SPONGE_IRON-0070-Kiln# 9",
+      "SPONGE_IRON-0080-Kiln# 9",
+      "SPONGE_IRON-0090-Kiln# 9",
+      "SPONGE_IRON-0100-Kiln# 9",
+      "SPONGE_IRON-0110-Kiln# 9",
+      "SPONGE_IRON-0020-Kiln# 10",
+      "SPONGE_IRON-0030-Kiln# 10",
+      "SPONGE_IRON-0040-Kiln# 10",
+      "SPONGE_IRON-0050-Kiln# 10",
+      "SPONGE_IRON-0060-Kiln# 10",
+      "SPONGE_IRON-0070-Kiln# 10",
+      "SPONGE_IRON-0080-Kiln# 10",
+      "SPONGE_IRON-0090-Kiln# 10",
+      "SPONGE_IRON-0100-Kiln# 10",
+      "SPONGE_IRON-0110-Kiln# 10",
+    ],
+  };
+
+  // ===================== HELPERS ========================
+  const TA_SEL = 'textarea[placeholder="Enter your question..."]';
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
+  const log = (...a) => console.log("%c[FormBot]", "color:#0a7;font-weight:bold", ...a);
+  const warn = (...a) => console.warn("[FormBot]", ...a);
+  const visible = (el) => !!el && el.offsetParent !== null;
+  const checkStop = () => { if (window.__formBotStop) throw new Error("Stopped by user"); };
+
+  async function waitFor(fn, timeout = CFG.timeout, interval = 200) {
+    const t0 = Date.now();
+    while (Date.now() - t0 < timeout) {
+      try { const r = fn(); if (r) return r; } catch (_) {}
+      await sleep(interval);
+    }
+    return null;
+  }
+
+  // React-friendly value setter (plain el.value = x is ignored by React)
+  function setNativeValue(el, value) {
+    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, "value").set.call(el, value);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function buttonByText(text, root = document) {
+    return [...root.querySelectorAll("button")].find((b) => visible(b) && norm(b.textContent) === text);
+  }
+
+  async function ensureChecked(cb) {
+    if (cb && !cb.checked) { cb.click(); await sleep(CFG.stepDelay); }
+    return cb ? cb.checked : false;
+  }
+
+  // Card root = nearest ancestor that contains the "Delete question" button
+  function getCard(el) {
+    let n = el;
+    while (n && n !== document.body) {
+      if (n.querySelector && n.querySelector('button[title="Delete question"]')) return n;
+      n = n.parentElement;
+    }
+    return el.closest(".rounded-lg.border") || el.parentElement;
+  }
+
+  // Auto-accept native confirm() and click common confirm-modal buttons
+  const origConfirm = window.confirm;
+  window.confirm = () => true;
+  async function confirmDialogIfAny() {
+    const dlg = await waitFor(
+      () => [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].find(visible), 800);
+    if (!dlg) return;
+    const btn = [...dlg.querySelectorAll("button")].find((b) =>
+      /^(delete|confirm|yes|ok|remove)$/i.test(norm(b.textContent)));
+    if (btn) { btn.click(); await sleep(CFG.stepDelay); }
+  }
+
+  // ============ Watch the app's save API calls ===========
+  // Lets the script know if "Save Form" really succeeded (e.g. 409 "A form with this name already exists")
+  const apiLog = [];
+  const isFormSave = (m, u) => /\/api\/forms/i.test(u) && /^(PATCH|PUT|POST)$/i.test(m);
+  const origOpen = XMLHttpRequest.prototype.open;
+  const origSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open = function (m, u, ...rest) {
+    this.__fb = { m: String(m).toUpperCase(), u: String(u) };
+    return origOpen.call(this, m, u, ...rest);
+  };
+  XMLHttpRequest.prototype.send = function (...args) {
+    if (this.__fb && isFormSave(this.__fb.m, this.__fb.u)) {
+      const info = this.__fb;
+      this.addEventListener("loadend", () => {
+        let msg = "";
+        try { const j = JSON.parse(this.responseText); msg = j?.error?.message || j?.message || ""; } catch (_) {}
+        apiLog.push({ ...info, status: this.status, msg });
+      });
+    }
+    return origSend.apply(this, args);
+  };
+  const origFetch = window.fetch;
+  window.fetch = async function (input, init = {}) {
+    const u = typeof input === "string" ? input : input?.url || "";
+    const m = (init.method || input?.method || "GET").toUpperCase();
+    const res = await origFetch.apply(this, arguments);
+    if (isFormSave(m, u)) {
+      let msg = "";
+      try { const j = await res.clone().json(); msg = j?.error?.message || j?.message || ""; } catch (_) {}
+      apiLog.push({ m, u, status: res.status, msg });
+    }
+    return res;
+  };
+
+  // ===================== LIST PAGE ======================
+  function getSearchInput() {
+    const label = [...document.querySelectorAll("div.pointer-events-none")]
+      .find((d) => norm(d.textContent) === "Search");
+    const inp = label?.parentElement?.querySelector("input");
+    if (inp) return inp;
+    return document.querySelector('input[type="search"], input[placeholder*="Search" i]');
+  }
+
+  // Like Ctrl+F on the results: ignore UPPER/lower case and spaces ("KILN#1" = "Kiln# 1"),
+  // but still whole-name match so "Kiln# 1" never matches "Kiln# 10".
+  const loose = (s) => norm(s).toLowerCase().replace(/\s+/g, "");
+  const rowName = (tr) => tr.querySelector("td")?.textContent;
+  const matchingRows = (name) => {
+    const rows = [...document.querySelectorAll("tbody tr")];
+    const exact = rows.filter((tr) => norm(rowName(tr)) === norm(name));
+    if (exact.length) return exact;
+    return rows.filter((tr) => loose(rowName(tr)) === loose(name));
+  };
+  const visibleRowNames = () => [...document.querySelectorAll("tbody tr")]
+    .map((tr) => norm(tr.querySelector("td")?.textContent)).filter(Boolean);
+
+  class SkipError extends Error {
+    constructor(status, msg) { super(msg); this.status = status; }
+  }
+
+  async function ensureOnListPage() {
+    if (getSearchInput()) return;
+    history.back();
+    if (!(await waitFor(getSearchInput, 8000))) throw new Error("Not on the forms list page and could not go back to it");
+    await sleep(800);
+  }
+
+  async function openFormForEdit(name) {
+    await ensureOnListPage();
+    let rows = [];
+    for (let attempt = 1; attempt <= CFG.searchRetries + 1 && !rows.length; attempt++) {
+      const search = await waitFor(getSearchInput);
+      if (!search) throw new Error("Search input not found – are you on the forms list page?");
+      search.focus();
+      setNativeValue(search, "");
+      await sleep(400);
+      setNativeValue(search, name);
+      await sleep(CFG.searchDelay * attempt); // wait longer on each retry
+      await waitFor(() => matchingRows(name).length, 5000 * attempt);
+      await sleep(300); // let the table finish rendering so duplicates are counted
+      rows = matchingRows(name);
+      if (!rows.length && attempt <= CFG.searchRetries) warn(`"${name}" not found, retrying search (${attempt})…`);
+    }
+    if (!rows.length) {
+      const seen = visibleRowNames().slice(0, 5);
+      throw new SkipError("NOT FOUND",
+        `Form not found. Search showed: ${seen.length ? seen.join(" | ") : "(no rows)"}`);
+    }
+    if (rows.length > 1 && CFG.skipDuplicates) {
+      throw new SkipError("DUPLICATE",
+        `${rows.length} forms share this exact name – server will reject the save (409). Rename/delete the duplicate first.`);
+    }
+    const foundName = norm(rowName(rows[0]));
+    if (foundName !== norm(name)) log(`  matched "${foundName}" (case/space difference)`);
+    const edit = rows[0].querySelector('button[title="Edit"]');
+    if (!edit) throw new Error("Edit button not found in row");
+    edit.click();
+
+    const ready = await waitFor(() =>
+      document.querySelector(TA_SEL) || buttonByText("Add Question") || buttonByText("Save Form"));
+    if (!ready) throw new Error("Edit page did not load");
+    await sleep(1000); // let all existing questions render
+  }
+
+  // ===================== EDIT PAGE ======================
+  async function deleteAllQuestions() {
+    let guard = 0;
+    while (true) {
+      checkStop();
+      const btns = [...document.querySelectorAll('button[title="Delete question"]')].filter(visible);
+      if (!btns.length) return 0;
+      if (++guard > 300) throw new Error("Too many delete attempts");
+      const before = btns.length;
+      btns[btns.length - 1].click(); // delete from the bottom up
+      await sleep(CFG.stepDelay);
+      await confirmDialogIfAny();
+      const dropped = await waitFor(
+        () => document.querySelectorAll('button[title="Delete question"]').length < before, 4000);
+      if (!dropped) {
+        warn(`Could not delete further – ${before} question(s) remain; will reuse them.`);
+        return before;
+      }
+    }
+  }
+
+  async function fillCard(ta, text) {
+    ta.focus();
+    setNativeValue(ta, text);
+    ta.blur();
+    await sleep(CFG.stepDelay);
+
+    const card = getCard(ta);
+    if (CFG.mapToParameter) {
+      await ensureChecked(card.querySelector('input[id^="mapToParameter-"]'));
+      // Parameter name input appears after ticking the checkbox → fill with the question name
+      const param = await waitFor(() => getCard(ta).querySelector('input[placeholder="e.g. C, MN, SI"]'), 5000);
+      if (param) {
+        param.focus();
+        setNativeValue(param, text);
+        param.blur();
+        await sleep(CFG.stepDelay);
+        if (param.value !== text) warn(`Parameter mismatch for "${text}" (got "${param.value}")`);
+      } else {
+        warn(`Parameter input not found for "${text}"`);
+      }
+    }
+    if (CFG.required) await ensureChecked(getCard(ta).querySelector('input[id^="required-"]'));
+    if (ta.value !== text) warn(`Text mismatch for "${text}" (got "${ta.value}")`);
+  }
+
+  async function addQuestion(text) {
+    const before = new Set(document.querySelectorAll(TA_SEL));
+    let ta = null;
+    for (let attempt = 1; attempt <= CFG.addRetries && !ta; attempt++) {
+      let btn;
+      if (before.size === 0) {
+        btn = buttonByText("Add Question");
+      } else {
+        const belowBtns = [...document.querySelectorAll('button[title="Add question below"]')].filter(visible);
+        btn = belowBtns[belowBtns.length - 1]; // add after the last question
+      }
+      if (!btn) { await sleep(1000); continue; }
+      btn.scrollIntoView({ block: "center" });
+      await sleep(200);
+      btn.click();
+      ta = await waitFor(() => [...document.querySelectorAll(TA_SEL)].find((t) => !before.has(t)), 5000);
+      if (!ta && attempt < CFG.addRetries) warn(`New box for "${text}" didn't appear, retrying (${attempt})…`);
+    }
+    if (!ta) throw new Error(`New question box did not appear for "${text}"`);
+    ta.scrollIntoView({ block: "center" });
+    await sleep(CFG.stepDelay);
+    await fillCard(ta, text);
+  }
+
+  async function saveAndReturn() {
+    const save = buttonByText("Save Form");
+    if (!save) throw new Error('"Save Form" button not found');
+    if (CFG.dryRun) {
+      log("DRY RUN – not saving.");
+      await sleep(CFG.afterSaveDelay);
+    } else {
+      const mark = apiLog.length;
+      save.click();
+      const res = await waitFor(() => apiLog[mark], CFG.timeout);
+      if (!res) warn("No save response seen from the server – check this form manually.");
+      else if (res.status >= 400) {
+        throw new SkipError("SAVE FAILED", `Server returned ${res.status}${res.msg ? `: ${res.msg}` : ""}`);
+      }
+      await sleep(CFG.afterSaveDelay);
+    }
+
+    let search = await waitFor(getSearchInput, 5000);
+    if (!search) { history.back(); search = await waitFor(getSearchInput, 8000); }
+    if (!search) throw new Error("Could not get back to the forms list after saving");
+    await sleep(800);
+  }
+
+  // ===================== MAIN ===========================
+  window.__formBotStop = false;
+  const results = [];
+  const toRun = CFG.onlyNames.length
+    ? FORMS.filter((f) => CFG.onlyNames.map(norm).includes(norm(f.Name)))
+    : FORMS;
+  log(`Processing ${toRun.length} form(s)…`);
+  try {
+    for (const form of toRun) {
+      const questions = (form.Materials || []).map(norm).filter(Boolean);
+      log(`▶ ${form.Name}  (${questions.length} questions)`);
+      try {
+        checkStop();
+        await openFormForEdit(form.Name);
+
+        const leftover = await deleteAllQuestions();
+        let i = 0;
+        // If the form won't allow deleting the last card(s), overwrite them first
+        const existing = [...document.querySelectorAll(TA_SEL)].slice(0, leftover);
+        for (const ta of existing) {
+          if (i >= questions.length) break;
+          await fillCard(ta, questions[i++]);
+        }
+        for (; i < questions.length; i++) {
+          checkStop();
+          log(`  + ${questions[i]}`);
+          await addQuestion(questions[i]);
+        }
+
+        await saveAndReturn();
+        results.push({ form: form.Name, status: "OK", questions: questions.length });
+        log(`✔ ${form.Name} saved`);
+      } catch (e) {
+        const status = e instanceof SkipError ? e.status : "ERROR";
+        results.push({ form: form.Name, status, error: e.message });
+        console.error(`[FormBot] ✖ ${form.Name} → ${status}: ${e.message}`);
+        if (e.message === "Stopped by user") break;
+        // get back to the list so the next form can continue
+        try { await ensureOnListPage(); } catch (_) {}
+      }
+    }
+  } finally {
+    window.confirm = origConfirm;
+    XMLHttpRequest.prototype.open = origOpen;
+    XMLHttpRequest.prototype.send = origSend;
+    window.fetch = origFetch;
+
+    console.table(results);
+    const failed = results.filter((r) => r.status !== "OK").map((r) => r.form);
+    window.__formBotResults = results;
+    window.__formBotFailed = failed;
+    const ok = results.length - failed.length;
+    log(`Done. ${ok} OK, ${failed.length} not done.`);
+    if (failed.length) {
+      log("To re-run only the failed forms, paste this into CFG.onlyNames:");
+      console.log(JSON.stringify(failed));
+    }
+  }
+})();
